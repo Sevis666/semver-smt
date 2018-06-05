@@ -1,3 +1,5 @@
+require "./parser"
+
 HELP = <<-EOS
 
 Usage: #{PROGRAM_NAME} <file.cnfuf>
@@ -23,6 +25,7 @@ end
 filename = ARGV[0]
 if File.exists?(filename)
   # TODO(Sevis): Run the actual code
+  parse_file(filename)
 else
   STDERR.print "#{PROGRAM_NAME}: cannot access '#{filename}'"
   STDERR.puts  " : No such file or directory"
