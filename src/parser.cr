@@ -1,6 +1,6 @@
 struct Literal
   property equal : Bool
-  property first, second : Int32
+  property first : Int32, second : Int32
 
   def initialize(@first, @equal, @second); end
 end
@@ -17,17 +17,41 @@ def parse_file(filename) : CNF
     if l[0] == 'p'
       if described
         STDERR.puts "Duplicate p line in file"
-        exit 2
+        exit 3
       end
       described = true
-      _, type, varc, clauc = l.split
-      variable_count = varc.to_i
-      clause_count = clauc.to_i
+      begin
+        _, type, varc, clauc = l.split
+        variable_count = varc.to_i
+        clause_count = clauc.to_i
+      rescue # IndexError or ArgumentError
+        STDERR.puts "Invalid p line : #{l}"
+        exit 3
+      end
+    else
+      cnf << parse_clause l
     end
     unless described
       STDERR.puts "Missing p line in file"
-      exit 2
+      exit 3
     end
   end
   cnf
+end
+
+def parse_clause(line)
+  clause = [] of Literal
+  line.split.each do |relation|
+    if relation.match(/^\d+=\d+$/)
+      a, b = relation.split("=").map(&.to_i)
+      clause << Literal.new(a, true, b)
+    elsif relation.match(/^\d+<>\d+$/)
+      a, b = relation.split("<>").map(&.to_i)
+      clause << Literal.new(a, false, b)
+    else
+      STDERR.puts "Malformed relation \"#{relation}\""
+      exit 3
+    end
+  end
+  clause
 end
