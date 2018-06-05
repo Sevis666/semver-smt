@@ -15,3 +15,9 @@ end
 def run(filename)
   Process.run("bin/main", [filename])
 end
+
+def should_yield(content, value)
+    file = create_testfile(content)
+    run(file).exit_code.should eq value
+    drop_testfile(file)
+end
