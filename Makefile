@@ -8,5 +8,8 @@ bin/main: $(shell find src -type f -name "*.cr")
 test:
 	crystal spec
 
+tar: clean
+	tar czf ROBIN.tgz -C .. $(shell basename $(CURDIR))
+
 clean:
-	rm bin/*
+	rm -f bin/* ROBIN.tgz
