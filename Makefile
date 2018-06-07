@@ -3,7 +3,7 @@ all: build test
 build: bin/main
 
 bin/main: $(shell find src -type f -name "*.cr")
-	crystal build $< -o $@
+	crystal build src/main.cr -o bin/main
 
 test:
 	crystal spec

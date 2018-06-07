@@ -1,12 +1,4 @@
-struct Literal
-  property equal : Bool
-  property first : Int32, second : Int32
-
-  def initialize(@first, @equal, @second); end
-end
-
-alias Clause = Array(Literal)
-alias CNF = Array(Clause)
+require "./cnf"
 
 def parse_file(filename) : CNF
   described = false
@@ -40,14 +32,14 @@ def parse_file(filename) : CNF
 end
 
 def parse_clause(line)
-  clause = [] of Literal
+  clause = [] of Relation
   line.split.each do |relation|
     if relation.match(/^\d+=\d+$/)
       a, b = relation.split("=").map(&.to_i)
-      clause << Literal.new(a, true, b)
+      clause << Relation.new(a, true, b)
     elsif relation.match(/^\d+<>\d+$/)
       a, b = relation.split("<>").map(&.to_i)
-      clause << Literal.new(a, false, b)
+      clause << Relation.new(a, false, b)
     else
       STDERR.puts "Malformed relation \"#{relation}\""
       exit 3

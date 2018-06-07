@@ -1,4 +1,7 @@
+require "./assignement"
 require "./parser"
+require "./cnf"
+require "./sat"
 
 HELP = <<-EOS
 
@@ -25,8 +28,15 @@ end
 
 filename = ARGV[0]
 if File.exists?(filename)
-  # TODO(Sevis): Run the actual code
   cnf = parse_file(filename)
+  relation_map = annotate cnf
+  boolean_cnf = boolean_translate(cnf)
+  success = false
+  until success
+    a = sat_solve(boolean_cnf)
+    success = check_assignement(a, relation_map)
+    boolean_cnf << learn_clause(a) unless success
+  end
 else
   STDERR.print "#{PROGRAM_NAME}: cannot access '#{filename}'"
   STDERR.puts  " : No such file or directory"
