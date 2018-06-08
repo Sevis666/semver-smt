@@ -1,8 +1,5 @@
 require "./assignement"
 
-class UnsatisfiableException < Exception
-end
-
 class WatchedClause
   property clause : Array({Bool, Int32})
   property watchdog1 : Int32, watchdog2 : Int32

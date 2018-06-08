@@ -1,5 +1,8 @@
 require "./union_find"
 
+class UnsatisfiableException < Exception
+end
+
 class Assignement
   struct Decision
     property id : Int32, decided : Bool, value : Bool
@@ -15,8 +18,11 @@ class Assignement
   end
 
   def deduce(id, value)
-    raise Exception.new if self.defined?(id)
-    @data.unshift(Decision.new(id, value, decided: false))
+    if self.defined?(id)
+      raise UnsatisfiableException.new if value != self[id]?
+    else
+      @data.unshift(Decision.new(id, value, decided: false))
+    end
   end
 
   def each(&block)
