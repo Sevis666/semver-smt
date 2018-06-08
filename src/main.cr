@@ -33,10 +33,17 @@ if File.exists?(filename)
   relation_map = annotate cnf
   boolean_cnf = boolean_translate(cnf)
   success = false
-  until success
-    a = sat_solve(boolean_cnf)
-    success = a.check(relation_map)
-    boolean_cnf << a.learn_clause unless success
+  begin
+    until success
+      a = sat_solve(boolean_cnf)
+      success = a.check(relation_map)
+      boolean_cnf << a.learn_clause unless success
+    end
+    STDERR.puts "SATISFIABLE"
+    exit 0
+  rescue UnsatisfiableException
+    STDERR.puts "UNSATISFIABLE"
+    exit 1
   end
 else
   STDERR.print "#{PROGRAM_NAME}: cannot access '#{filename}'"
