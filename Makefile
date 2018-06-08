@@ -9,7 +9,7 @@ test:
 	crystal spec
 
 tar: clean
-	tar czf ROBIN.tgz -C .. $(shell basename $(CURDIR))
+	tar czf ROBIN.tgz --exclude=*.tgz -C .. $(shell basename $(CURDIR))
 
 clean:
 	rm -f bin/* ROBIN.tgz
