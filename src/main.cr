@@ -2,6 +2,7 @@ require "./assignement"
 require "./parser"
 require "./cnf"
 require "./sat"
+require "./dpll_solver"
 
 HELP = <<-EOS
 
@@ -34,11 +35,15 @@ if File.exists?(filename)
   success = false
   until success
     a = sat_solve(boolean_cnf)
-    success = check_assignement(a, relation_map)
-    boolean_cnf << learn_clause(a) unless success
+    success = a.check(relation_map)
+    boolean_cnf << a.learn_clause unless success
   end
 else
   STDERR.print "#{PROGRAM_NAME}: cannot access '#{filename}'"
   STDERR.puts  " : No such file or directory"
   exit 2
+end
+
+def sat_solve(cnf)
+  DPLLSolver.new(cnf).solve
 end

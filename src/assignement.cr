@@ -1,34 +1,74 @@
 require "./union_find"
 
-alias Assignement = Hash(Int32, Bool)
+class Assignement
+  struct Decision
+    property id : Int32, decided : Bool, value : Bool
+    def initialize(@id, @value, @decided); end
+  end
 
-def defined?(i : Int32, a : Assignement)
-  a.has_key? i
+  def initialize
+    @data = Array(Decision).new
+  end
+
+  def guess(id, value)
+    @data.unshift(Decision.new(id, value, decided: true))
+  end
+
+  def deduce(id, value)
+    raise Exception.new if self.defined?(id)
+    @data.unshift(Decision.new(id, value, decided: false))
+  end
+
+  def each(&block)
+    @data.each do |decision|
+      yield decision.id, decision.value
+    end
+  end
+
+  def []?(i)
+    @data.each do |decision|
+      return decision.value if decision.id == i
+    end
+  end
+
+  def defined?(i : Int32)
+    @data.map { |d| d.id }.includes? i
+  end
+
+  def check(relation_map)
+    u = UnionFind.new((@data.map { |d| d.id } + [0]).max + 1)
+    # Merge values that are supposed to be equal
+    each do |id, value|
+      rel = relation_map[id]
+      equal = value ^ rel.equal
+      next unless equal
+      u.merge(rel.first - 1, rel.second - 1)
+    end
+    # Check that values not supposed to be equal are indeed not
+    each do |id, value|
+      rel = relation_map[id]
+      equal = value ^ rel.equal
+      next if equal
+      return false unless u.find(rel.first - 1) != u.find(rel.second - 1)
+    end
+    return true
+  end
+
+  def learn_clause
+    clause = [] of {Bool, Int32}
+    each do |id, value|
+      clause << { ! value, id }
+    end
+    clause
+  end
+
+  def backtrack
+    while ! @data.empty? && ! @data.first.decided
+      @data.shift
+    end
+    raise UnsatisfiableException.new if @data.empty?
+    decision = @data.shift
+    deduce(decision.id, ! decision.value)
+  end
 end
 
-def check_assignement(a : Assignement, relation_map)
-  u = UnionFind.new(a.keys.max)
-  # Merge values that are supposed to be equal
-  a.each do |id, value|
-    rel = relation_map[id]
-    equal = value ^ rel.equal
-    next unless equal
-    u.merge(rel.first, rel.second)
-  end
-  # Check that values not supposed to be equal are indeed not
-  a.each do |id, value|
-    rel = relation_map[id]
-    equal = value ^ rel.equal
-    next if equal
-    return false unless u.find(rel.first) != u.find(rel.second)
-  end
-  return true
-end
-
-def learn_clause(a : Assignement)
-  clause = [] of {Bool, Int32}
-  a.each do |id, value|
-    clause << { ! value, id }
-  end
-  clause
-end
