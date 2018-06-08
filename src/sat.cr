@@ -47,7 +47,7 @@ abstract class SATSolver
 
   def initialize(cnf : Array(Array({Bool, Int32})))
     @a = Assignement.new
-    @cnf = cnf.map do |c|
+    @cnf = reduce(cnf).map do |c|
       WatchedClause.new(c)
     end
   end
@@ -82,5 +82,42 @@ abstract class SATSolver
 
   def backtrack
     @a.backtrack
+  end
+
+  def reduce(cnf)
+    cnf.map do |clause|
+      reduce_clause(clause)
+    end.select { |c| ! c.empty? }
+  end
+
+  private def reduce_clause(clause)
+    reduced = [] of {Bool, Int32}
+    h = Hash(Int32, Bool).new
+    has_always_false = false
+
+    clause.each do |(value, id)|
+      if id == -1
+        if value
+          return [] of {Bool, Int32}
+        else
+          has_always_false = true
+          next
+        end
+      end
+
+      if h.has_key?(id)
+        raise UnsatisfiableException.new if h[id] != value
+      else
+        reduced << ({value, id})
+        h[id] = value
+      end
+    end
+
+    raise UnsatisfiableException.new if reduced.empty? && has_always_false
+    if reduced.size == 1
+      v, id = reduced.shift
+      @a.deduce(id, v)
+    end
+    reduced
   end
 end

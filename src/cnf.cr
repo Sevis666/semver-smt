@@ -18,9 +18,13 @@ def annotate(cnf : CNF)
   cnf.map! do |clause|
     clause.map do |relation|
       a, b = relation.first, relation.second
-      i = h[a][b]? || h[b][a]? || (id += 1)
+      if a == b
+        i = -1
+      else
+        i = h[a][b]? || h[b][a]? || (id += 1)
+      end
       relation.id = h[a][b] = i
-      relation_map[i] = relation
+      relation_map[i] = relation unless i == -1
       relation
     end
   end
